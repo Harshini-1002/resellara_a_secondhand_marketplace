@@ -1,12 +1,12 @@
- 
-# Use an official JDK runtime as base
-FROM eclipse-temurin:17-jdk
-
-# Set working directory
+# Stage 1: Build the JAR using Maven
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
 
-# Copy the JAR file into the container
-COPY target/backend-0.0.1-SNAPSHOT.jar app.jar
-
-# Run the JAR
+# Stage 2: Run the JAR
+FROM eclipse-temurin:17-jdk
+WORKDIR /app
+COPY --from=build /app/target/backend-0.0.1-SNAPSHOT.jar app.jar
 ENTRYPOINT ["java","-jar","/app/app.jar"]
